@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+function nvims() {
+    items=("astro" "minimax")
+    config=$(printf "%s\n" "${items[@]}" | fzf --prompt=" Neovim Config  " --height=~50% --layout=reverse --border --exit-0)
+    if [[ -z $config ]]; then
+        echo "Nothing selected"
+        return 0
+    elif [[ $config == "astro" ]]; then
+        export NVIM_APPNAME="nvim-configs/astro-nvim"
+    elif [[ $config == "minimax" ]]; then
+        export NVIM_APPNAME="nvim-configs/nvim-minimax"
+    fi
+}
+
+function vi() {
+	NVIM_APPNAME="$NVIM_APPNAME" nvim $@
+}

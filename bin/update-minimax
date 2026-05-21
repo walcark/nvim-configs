@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+source constants
+
+# Fetch last version of minimax
+if [[ -d $MINIMAX_CONF_REPO ]]; then
+  info "Pulling from MiniMax GitHub repository."
+  cd MINIMAX_CONF_REPO
+else
+  info "MiniMax not in .config. Cloning from the GitHub repository."
+  git clone \
+    --filter=blob:none \
+    git@github.com:nvim-mini/MiniMax.git \
+    $MINIMAX_CONF_REPO
+fi
+
+# Create the real minimax config folder
+NVIM_APPNAME=nvim-configs/nvim-minimax nvim -l $MINIMAX_CONF_REPO/setup.lua
+
+
