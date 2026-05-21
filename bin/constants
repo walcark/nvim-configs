@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
 NVIM_CONF_HOME="$HOME/.config/nvim-configs/"
-MINIMAX_CONF_REPO="$NVIM_CONF_HOME/nvim-minimax-configs/"
+MINIMAX_GITHUB_REPO="$NVIM_CONF_HOME/nvim-minimax-configs/"
+MINIMAX_CONF_REPO="$NVIM_CONF_HOME/nvim-minimax/"
