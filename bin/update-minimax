@@ -12,7 +12,7 @@ else
   git clone \
     --filter=blob:none \
     git@github.com:nvim-mini/MiniMax.git \
-    $MINIMAX_CONF_REPO
+    $MINIMAX_GITHUB_REPO
 fi
 
 # Create the real minimax config folder
