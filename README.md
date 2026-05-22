@@ -2,6 +2,17 @@
 
 This folder contains all my configurations for [Neovim](https://neovim.io/).
 
+## Change neovim app
+
+A simple function ``nvims`` is defined in ``bin/utils``. It opens an ``fzf`` prompt and allow the user to easily change the ``NVIM_APPNAME`` environment variables. This allows to easily change the Neovim configuration used. For now, the following configuration are available:
+
+
+| Configuration | Description |
+| -- | -- |
+| astro | My AstroNvim configuration |
+| minimax | The mini.nvim MiniMax configuration generated from the MiniMax GitHub repository. |
+
+
 ## My Neovim configuration journey
 
 I had the opportunity to start learning neovim with [NvChad](https://nvchad.com/) for which configuration was not beginner-friendly because of the package-specific Lua syntax. I decided to abandon this configuration because I found it hard to customize for a newcomer.
@@ -14,4 +25,5 @@ This is why I am thinking about trying [mini.nvim](https://github.com/nvim-mini/
 
 ## Roadmap
 
-- [ ] Try [mini.nvim](https://github.com/nvim-mini/mini.nvim)
+- [ ] Make MiniMax easily updatable.
+- [ ] Really try [mini.nvim](https://github.com/nvim-mini/mini.nvim)
