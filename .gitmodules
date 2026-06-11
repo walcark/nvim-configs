@@ -1,0 +1,3 @@
+[submodule "mini-nvim/pack/plugins/start/mini.nvim"]
+	path = mini-nvim/pack/plugins/start/mini.nvim
+	url = git@github.com:nvim-mini/mini.nvim.git
