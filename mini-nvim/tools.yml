@@ -1,0 +1,42 @@
+# tools.yaml — external binaries required by this Neovim config.
+#
+# Single source of truth consumed by the `dev` Ansible role of the dotfiles
+# repo: the role clones this repo, loads this file (include_vars), then
+# installs each section. Adding language support = one commit here
+# (lsp/<server>.lua + the matching entry below).
+#
+# The config degrades gracefully when a binary is missing: LSP simply not
+# attached, regex highlighting and mini.nvim modules keep working.
+
+# conda-forge packages, installed user-space with `pixi global install`.
+pixi:
+  - ruff                                  # Python lint + format
+  - basedpyright                          # Python LSP
+  - gopls                                 # Go LSP
+  - lua-language-server                   # Lua LSP
+  - stylua                                # Lua format
+  - clang-tools                           # clangd, clang-format (C++)
+  - bash-language-server
+  - shellcheck                            # Bash lint (driven by bash-ls)
+  - go-shfmt                              # Bash format (driven by bash-ls)
+  - yaml-language-server                  # YAML / GitHub Actions
+  - actionlint                            # GitHub Actions lint
+  - dockerfile-language-server-nodejs
+  - ansible-lint                          # driven by ansible-language-server
+  - marksman                              # Markdown LSP
+  - mdformat                              # Markdown format
+  - nodejs                                # runtime for the npm section below
+
+# Not on conda-forge: installed with `npm install -g --prefix ~/.local`.
+npm:
+  - package: "@ansible/ansible-language-server"
+    bin: ansible-language-server
+
+# Not on conda-forge nor npm: static binaries from GitHub releases,
+# dropped into ~/.local/bin. {version} is substituted at install time.
+static:
+  hadolint:
+    # renovate: datasource=github-releases depName=hadolint/hadolint
+    version: "2.12.0"
+    url: "https://github.com/hadolint/hadolint/releases/download/v{version}/hadolint-Linux-x86_64"
+    bin: hadolint
