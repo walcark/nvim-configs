@@ -10,11 +10,10 @@ vim.opt.splitbelow = true
 vim.opt.splitright = true
 
 -- Change <leader> key to Space
-vim.g.mapleader = ""
+vim.g.mapleader = " "
 
 -- 4 spaces instead of tabstop + equal 4 space for indentation
 vim.opt.expandtab = true
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 0
-
 
