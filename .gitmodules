@@ -1,6 +1,6 @@
 [submodule "mini-nvim/pack/plugins/start/mini.nvim"]
 	path = mini-nvim/pack/plugins/start/mini.nvim
-	url = git@github.com:nvim-mini/mini.nvim.git
+    url = https://github.com/nvim-mini/mini.nvim.git
 [submodule "mini-nvim/pack/plugins/start/render-markdown.nvim"]
 	path = mini-nvim/pack/plugins/start/render-markdown.nvim
 	url = https://github.com/MeanderingProgrammer/render-markdown.nvim.git

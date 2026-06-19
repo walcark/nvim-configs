@@ -3,6 +3,7 @@
 --      mini.files
 --      mini.hues
 --      mini.snippets
+--      mini.completion
 --      mini.pairs
 --      mini.icons
 --      mini.pick
@@ -26,6 +27,12 @@ require('mini.snippets').setup({
         ),
     },
 })
+
+-- Two-stage autocompletion: LSP first (with completion item docs and
+-- automatic signature help), buffer words as fallback. Set up after
+-- mini.snippets so snippet candidates integrate into the menu.
+vim.opt.completeopt = { 'menuone', 'noinsert' }
+require('mini.completion').setup()
 
 require('mini.pairs').setup()
 
