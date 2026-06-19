@@ -1,2 +1,2 @@
--- Format-on-save (LSP-first, repli binaire). Logique dans lua/walcark/format.lua.
+-- Format-on-save (LSP-first, binary fallback). Logic in lua/walcark/format.lua.
 require('walcark.format').setup()

@@ -1,7 +1,6 @@
 -- Contains all imports and configuration of mini.nvim pluggins.
 -- Currently used pluggins:
 --      mini.files
---      mini.hues
 --      mini.snippets
 --      mini.completion
 --      mini.pairs
@@ -12,13 +11,6 @@
 -- File navigation
 require('mini.files').setup()
 vim.keymap.set('n', '<leader>e', MiniFiles.open, {desc = 'Explorer'})
-
-require('mini.hues').setup({
-    background = '#1a1b2e',
-    foreground = '#c0caf5',
-    n_hues = 8,
-    saturation = 'high',
-})
 
 require('mini.snippets').setup({
     snippets = {
