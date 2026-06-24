@@ -7,7 +7,6 @@ local M = {}
 -- marksman do not format).
 local binary = {
     lua = { 'stylua', '-' },       -- stdin -> stdout
-    markdown = { 'mdformat', '-' },
 }
 
 -- Filetypes where we also run the LSP organize-imports before formatting.
