@@ -8,9 +8,30 @@
 --      mini.pick
 
 
+-- Recently visited files
+require('mini.visits').setup()
+vim.keymap.set('n', '<leader>fv', MiniVisits.select_path, { desc = 'Visited paths' })
+
 -- File navigation
-require('mini.files').setup()
-vim.keymap.set('n', '<leader>e', MiniFiles.open, {desc = 'Explorer'})
+require('mini.files').setup({
+    windows = {
+        preview = true,
+        width_focus = 30,
+        width_nofocus = 20,
+        width_preview = 70,
+    },
+    options = {
+        use_as_default_explorer = true,
+    }
+})
+
+-- Open the current file's directory, not the cwd
+local files_toggle = function()
+    if not MiniFiles.close() then
+        MiniFiles.open(vim.api.nvim_buf_get_name(0), true)
+    end
+end
+vim.keymap.set('n', '<leader>e', files_toggle, { desc = 'Explorer' })
 
 require('mini.snippets').setup({
     snippets = {
@@ -35,5 +56,3 @@ vim.keymap.set('n', '<leader>ff', MiniPick.builtin.files, { desc = 'Find files' 
 vim.keymap.set('n', '<leader>fg', MiniPick.builtin.grep_live, { desc = 'Grep' })
 vim.keymap.set('n', '<leader>fb', MiniPick.builtin.buffers, { desc = 'Buffers' })
 vim.keymap.set('n', '<leader>fh', MiniPick.builtin.help, { desc = 'Help' })
-
-

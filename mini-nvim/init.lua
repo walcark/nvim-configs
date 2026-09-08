@@ -18,3 +18,9 @@ vim.opt.tabstop = 4
 vim.opt.shiftwidth = 0
 
 vim.opt.clipboard = "unnamedplus"
+
+-- netrw options
+vim.g.netrw_liststyle = 3
+vim.g.netrw_winsize = 20
+vim.g.netrw_banner = 0
+vim.keymap.set('n', '<leader>E', '<cmd>Lexplore<cr>', { desc = 'Sidebar tree' })
