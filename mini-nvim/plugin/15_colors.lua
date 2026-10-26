@@ -12,6 +12,12 @@ vim.api.nvim_create_autocmd('ColorScheme', {
         -- local set = vim.api.nvim_set_hl
         -- set(0, 'Comment', { italic = true })
         -- set(0, '@lsp.type.function', { bold = true })
+
+        -- Drop the editor background so kitty's own one shows through: its
+        -- window_margin would otherwise frame the buffer in a second color.
+        for _, group in ipairs({ 'Normal', 'NormalNC', 'SignColumn', 'EndOfBuffer' }) do
+            vim.api.nvim_set_hl(0, group, { bg = 'NONE' })
+        end
     end,
 })
 
