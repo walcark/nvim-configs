@@ -1,0 +1,13 @@
+# A report: numbered sections and pages, a more formal font.
+variables:
+  papersize: a4
+  mainfont: New Computer Modern
+  codefont: [DejaVu Sans Mono]
+  fontsize: 11pt
+  section-numbering: "1.1"
+  page-numbering: "1"
+  margin:
+    x: 2.5cm
+    y: 2.5cm
+include-before-body:
+  - ${.}/report.typ

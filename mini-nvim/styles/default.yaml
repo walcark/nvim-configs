@@ -1,0 +1,12 @@
+# A clean note: serif text, wide margins, nothing numbered.
+variables:
+  papersize: a4
+  mainfont: Libertinus Serif
+  codefont: [DejaVu Sans Mono]
+  fontsize: 11pt
+  linestretch: 1.1
+  margin:
+    x: 2.2cm
+    y: 2.2cm
+include-before-body:
+  - ${.}/default.typ
