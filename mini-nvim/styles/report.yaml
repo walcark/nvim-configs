@@ -1,4 +1,7 @@
 # A report: numbered sections and pages, a more formal font.
+# Wide enough that pandoc never fixes column widths: a table line longer
+# than this made every column the same width. Typst then sizes them to fit.
+columns: 1000
 variables:
   papersize: a4
   mainfont: New Computer Modern
