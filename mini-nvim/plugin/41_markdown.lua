@@ -12,6 +12,33 @@
 
 local filter = vim.fn.stdpath('config') .. '/pandoc/abs-images.lua'
 local delay = 300 -- ms of quiet before re-rendering
+local a4 = 210 / 297 -- width / height of an A4 page
+local fallback_bias = 40 -- percent of the width for the preview if measuring fails
+
+-- Width of the preview, in percent of this kitty window, so that its height
+-- holds exactly one A4 page. kitty reports sizes in cells only, and a cell's
+-- shape depends on the font, so the pixel size is asked to the terminal
+-- (TIOCGWINSZ on /dev/tty, which kitty fills in pixels).
+local function a4_bias()
+    local ok, bias = pcall(function()
+        local ffi = require('ffi')
+        pcall(ffi.cdef, [[
+            struct mdp_winsize { unsigned short row, col, xpixel, ypixel; };
+            int open(const char *path, int flags);
+            int close(int fd);
+            int ioctl(int fd, unsigned long request, ...);
+        ]])
+        local fd = ffi.C.open('/dev/tty', 0)
+        if fd < 0 then return nil end
+        local ws = ffi.new('struct mdp_winsize')
+        local rc = ffi.C.ioctl(fd, 0x5413, ws) -- TIOCGWINSZ
+        ffi.C.close(fd)
+        if rc ~= 0 or ws.xpixel == 0 or ws.ypixel == 0 then return nil end
+        return math.floor(100 * ws.ypixel * a4 / ws.xpixel + 0.5)
+    end)
+    if not ok or not bias then return fallback_bias end
+    return math.max(20, math.min(70, bias))
+end
 local previews = {} -- buf -> { dir, timer, watch, title, group }
 
 local function notify(msg, level)
@@ -41,7 +68,7 @@ local function start(buf)
     local function render(wait)
         vim.fn.writefile(vim.api.nvim_buf_get_lines(buf, 0, -1, false), md)
         local job = vim.system(
-            { 'pandoc', md, '-s', '-t', 'typst', '--lua-filter', filter, '-o', typ },
+            { 'pandoc', md, '-s', '-t', 'typst', '-V', 'papersize=a4', '--lua-filter', filter, '-o', typ },
             { env = env },
             function(res) if res.code ~= 0 then notify(res.stderr) end end
         )
@@ -68,7 +95,7 @@ local function start(buf)
     p.watch = vim.system({ 'typst', 'watch', '--root', '/', typ, pdf })
     vim.system({
         'kitten', '@', 'launch', '--location=vsplit', '--keep-focus',
-        '--title', p.title, 'tdf', '-f', pdf,
+        '--bias', tostring(a4_bias()), '--title', p.title, 'tdf', '-f', pdf,
     }, {}, function(res) if res.code ~= 0 then notify(res.stderr) end end)
 
     vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI', 'BufWritePost' }, {
