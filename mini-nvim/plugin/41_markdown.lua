@@ -68,7 +68,7 @@ local function start(buf)
     p.watch = vim.system({ 'typst', 'watch', '--root', '/', typ, pdf })
     vim.system({
         'kitten', '@', 'launch', '--location=vsplit', '--keep-focus',
-        '--title', p.title, 'tdf', '-t', pdf,
+        '--title', p.title, 'tdf', pdf,
     }, {}, function(res) if res.code ~= 0 then notify(res.stderr) end end)
 
     vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI', 'BufWritePost' }, {

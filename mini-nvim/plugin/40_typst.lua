@@ -13,7 +13,7 @@ vim.api.nvim_create_user_command('TypstPreview', function()
     vim.system({ 'typst', 'watch', src, pdf })
     vim.system({
         'kitten', '@', 'launch', '--location=vsplit', '--keep-focus',
-        'tdf', '-t', pdf,
+        'tdf', pdf,
     }, {}, function(res)
         if res.code ~= 0 then
             vim.schedule(function()
