@@ -7,6 +7,15 @@
 -- private temp copy, never to your file. Measured on a 300-line note: pandoc
 -- 0.07 s + typst 0.2 s, so the page updates about half a second after you stop.
 --
+-- The preview follows the cursor: the page holding the block under the cursor
+-- is shown. pandoc reads the note with `+sourcepos`, a filter puts an
+-- invisible marker before each block (pandoc/sourcepos.lua), and `typst eval`
+-- gives the line -> page table. That is a second pandoc pass, run beside the
+-- one that feeds the page: the markers cost pandoc 0.19 s against 0.08 s
+-- (measured), and the text must not wait for them. Both passes use the same
+-- reader, so the pages match. tdf is driven like a user would,
+-- its "go to page" keys sent through kitty.
+--
 -- :MarkdownPreview [style] toggles it for the current buffer; with a style
 -- while it runs, it switches style instead. The style comes from, in order:
 -- that argument, `style: <name>` in the note's front matter, `default`. It is
@@ -15,6 +24,8 @@
 -- stops the preview and closes the split.
 
 local filter = vim.fn.stdpath('config') .. '/pandoc/abs-images.lua'
+local sourcepos = vim.fn.stdpath('config') .. '/pandoc/sourcepos.lua'
+local follow_delay = 150 -- ms of cursor rest before turning the page
 local styles = vim.fn.stdpath('config') .. '/styles'
 local delay = 300 -- ms of quiet before re-rendering
 local a4 = 210 / 297 -- width / height of an A4 page
@@ -84,8 +95,10 @@ local function stop(buf)
     local p = previews[buf]
     if not p then return end
     previews[buf] = nil
-    p.timer:stop()
-    p.timer:close()
+    for _, t in ipairs({ p.timer, p.cursor_timer }) do
+        t:stop()
+        t:close()
+    end
     if p.watch then p.watch:kill('sigterm') end
     vim.system({ 'kitten', '@', 'close-window', '--match', 'title:' .. p.title })
     pcall(vim.api.nvim_del_augroup_by_id, p.group)
@@ -97,17 +110,55 @@ local function start(buf, override)
     local dir = vim.fn.tempname()
     vim.fn.mkdir(dir, 'p')
     local md, typ, pdf = dir .. '/note.md', dir .. '/note.typ', dir .. '/note.pdf'
+    local map_typ = dir .. '/map.typ' -- the marked copy, for the table only
     local env = { MDPREVIEW_DIR = vim.fn.fnamemodify(src ~= '' and src or vim.fn.getcwd(), ':p:h') }
 
-    -- Buffer -> temp .md -> .typ. typst watch picks the .typ up from there.
+    -- Show the page of the block under the cursor: the last marker at or
+    -- above the cursor line. Keys are sent only when the page changes.
+    local function follow()
+        local p = previews[buf]
+        if not (p and p.map) or vim.api.nvim_get_current_buf() ~= buf then return end
+        local row, page = vim.api.nvim_win_get_cursor(0)[1], nil
+        for _, m in ipairs(p.map) do
+            if m.line > row then break end
+            page = m.page
+        end
+        if page and page ~= p.page then
+            p.page = page
+            vim.system({ 'kitten', '@', 'send-text', '--match', 'title:' .. p.title, 'g' .. page .. '\r' })
+        end
+    end
+
+    -- The line -> page table, refreshed after each render. It compiles on its
+    -- own, beside typst watch, so it never delays the page itself.
+    local function refresh_map()
+        vim.system({
+            'typst', 'eval', 'query(<srcline>).map(it => it.value)', '--in', map_typ, '--root', '/',
+        }, {}, function(res)
+            if res.code ~= 0 then return end
+            local ok, map = pcall(vim.json.decode, res.stdout)
+            if not ok then return end
+            table.sort(map, function(a, b) return a.line < b.line end)
+            vim.schedule(function()
+                if previews[buf] then
+                    previews[buf].map = map
+                    follow()
+                end
+            end)
+        end)
+    end
+
+    -- Buffer -> temp .md -> .typ, which typst watch picks up; and, beside it,
+    -- the marked copy for the line -> page table.
     local function render(wait)
         vim.fn.writefile(vim.api.nvim_buf_get_lines(buf, 0, -1, false), md)
         local style = style_file(buf, previews[buf] and previews[buf].style or override)
-        local job = vim.system(
-            { 'pandoc', md, '-s', '-t', 'typst', '--defaults=' .. style, '--lua-filter', filter, '-o', typ },
-            { env = env },
-            function(res) if res.code ~= 0 then notify(res.stderr) end end
-        )
+        local base = { 'pandoc', md, '-s', '-t', 'typst', '--defaults=' .. style, '--lua-filter', filter }
+        local job = vim.system(vim.list_extend({ unpack(base) }, { '-f', 'commonmark_x', '-o', typ }),
+            { env = env }, function(res) if res.code ~= 0 then notify(res.stderr) end end)
+        vim.system(vim.list_extend({ unpack(base) },
+            { '-f', 'commonmark_x+sourcepos', '--lua-filter', sourcepos, '-o', map_typ }),
+            { env = env }, function(res) if res.code == 0 then refresh_map() end end)
         if wait then job:wait() end
     end
 
@@ -123,12 +174,14 @@ local function start(buf, override)
     local p = {
         dir = dir,
         timer = vim.uv.new_timer(),
+        cursor_timer = vim.uv.new_timer(),
         title = 'mdpreview-' .. buf,
         group = vim.api.nvim_create_augroup('mdpreview_' .. buf, { clear = true }),
         style = override,
         render = render,
     }
     previews[buf] = p
+    refresh_map() -- the first render ran before the preview existed
     -- --root /: images may live anywhere, made absolute by the filter.
     p.watch = vim.system({ 'typst', 'watch', '--root', '/', typ, pdf })
     vim.system({
@@ -144,6 +197,14 @@ local function start(buf, override)
             p.timer:start(delay, 0, vim.schedule_wrap(function()
                 if previews[buf] then render(false) end
             end))
+        end,
+    })
+    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+        group = p.group,
+        buffer = buf,
+        callback = function()
+            p.cursor_timer:stop()
+            p.cursor_timer:start(follow_delay, 0, vim.schedule_wrap(follow))
         end,
     })
     vim.api.nvim_create_autocmd({ 'BufWipeout', 'BufDelete' }, {
