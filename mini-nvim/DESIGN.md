@@ -38,7 +38,7 @@ lua/walcark/
 after/ftplugin/           -- réglages par langage (indent, keywordprg, K → ansible-doc)
 snippets/                 -- par langage
 schemas/                  -- JSON schemas vendorisés (yamlls hors-ligne)
-pack/plugins/start/       -- submodules : mini.nvim, render-markdown.nvim
+pack/plugins/start/       -- submodules : mini.nvim, render-markdown.nvim, vim-suda
 ```
 
 ## Modules mini.nvim

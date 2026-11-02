@@ -4,3 +4,6 @@
 [submodule "mini-nvim/pack/plugins/start/render-markdown.nvim"]
 	path = mini-nvim/pack/plugins/start/render-markdown.nvim
 	url = https://github.com/MeanderingProgrammer/render-markdown.nvim.git
+[submodule "mini-nvim/pack/plugins/start/vim-suda"]
+	path = mini-nvim/pack/plugins/start/vim-suda
+	url = https://github.com/lambdalisue/vim-suda.git
