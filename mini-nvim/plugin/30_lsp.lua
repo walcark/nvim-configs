@@ -25,10 +25,21 @@ local servers = {
     'bashls', 'yamlls', 'ansiblels', 'dockerls', 'marksman',
 }
 
-for _, name in ipairs(servers) do
+local function usable(name)
     local cfg = vim.lsp.config[name]
     local exe = cfg and type(cfg.cmd) == 'table' and cfg.cmd[1] or nil
-    if exe ~= nil and vim.fn.executable(exe) == 1 then
+    return exe ~= nil and vim.fn.executable(exe) == 1
+end
+
+-- Without ansiblels, yamlls still checks the Ansible files as plain YAML.
+if not usable('ansiblels') and vim.lsp.config.yamlls then
+    local fts = vim.deepcopy(vim.lsp.config.yamlls.filetypes or { 'yaml' })
+    table.insert(fts, 'yaml.ansible')
+    vim.lsp.config('yamlls', { filetypes = fts })
+end
+
+for _, name in ipairs(servers) do
+    if usable(name) then
         vim.lsp.enable(name)
     end
 end
