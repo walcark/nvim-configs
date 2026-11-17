@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# The image side of the data view, run in a kitty split by plugin/45_dataview.lua.
+#
+# Reads one PNG path per line (typed by nvim through `kitten @ send-text`) and
+# shows it with `kitten icat`, placed on the whole window so that it never
+# moves. Writes the window size in pixels to <size file> at start and on every
+# resize, so that nvim renders at exactly that size.
+size_file=$1
+
+stty -echo 2>/dev/null
+printf '\e[?25l\e[H\e[2J'
+size() {
+    kitten icat --print-window-size > "$size_file.tmp" 2>/dev/null && mv "$size_file.tmp" "$size_file"
+}
+trap size WINCH
+size
+while true; do
+    # A resize interrupts read (status > 128): read again.
+    IFS= read -r png || { (( $? > 128 )) && continue; exit 0; }
+    [[ -f $png ]] || continue
+    read -r rows cols < <(stty size)
+    kitten icat --clear 2>/dev/null
+    printf '\e[H\e[2J'
+    kitten icat --stdin=no --transfer-mode=file --no-trailing-newline \
+        --place "${cols}x${rows}@0x0" --align=center "$png" 2>/dev/null
+    printf '\e[H'
+done
